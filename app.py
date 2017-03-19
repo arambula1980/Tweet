@@ -2,7 +2,7 @@ import sys
 import requests
 import tweepy
 import oauth2
-from flask import jsonify
+import json
 
 def get_symbol(symbol):
     url = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query={}&region=1&lang=en".format(symbol)
@@ -29,8 +29,8 @@ def collectTweets(keyword):
 	new_tweets = api.user_timeline("GSElevator", count=50)
 
 	result = oauth_req("https://api.twitter.com/1.1/search/tweets.json?q=%23michigan&result_type=mixed&count=4", 'abd','hey')
-	res = jsonify(result)
-	print res
+	res = json.loads(result)
+	print res["statuses"][0]["text"]
 	# result = requests.get("https://api.twitter.com/1.1/search/tweets.json?q=%40AAPL")
 	# print result.text
 
