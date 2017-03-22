@@ -74,6 +74,10 @@ def collectTweets(keyword):
 	# result = requests.get("https://api.twitter.com/1.1/search/tweets.json?q=%40AAPL")
 	# print result.text
 
+test = ["antithesis contrary it unable",
+"Abstinent the battered accessible",
+"accessible obliging",
+"Battered the wrong"]
 def sentimentAnalysis(tweets_list):
 	#scores_file = open("sentimentstrength/wordwithStrength.txt", "r")
 	scores_file = open("SentiWordNet.txt", "r")
@@ -92,15 +96,19 @@ def sentimentAnalysis(tweets_list):
 			#neg_dict[str(word[0])] = float(tmp[3])
 	#print scores_dict
 
+	if "it" in scores_dict:
+		print scores_dict["it"]
+
 	for each_tweet in tweets_list:
 		count = 0.0
 		tweet_score = 0.0
 		tmp = each_tweet.split()
 		for each_word in tmp:
 			if each_word.lower() in scores_dict:
+				print "word: ", each_word, "score: ", scores_dict[each_word.lower()]
 				tweet_score = tweet_score + scores_dict[each_word.lower()]
 				count = count + 1.0
-		print (each_tweet + " " + str(tweet_score))
+		print (each_tweet + " " + str(tweet_score/count))
 		if count != 0:
 			tweet_scores.append((float(tweet_score)/count))
 
@@ -113,14 +121,15 @@ def main():
 	ticker = sys.argv[1]
 	company_name = get_symbol(ticker)
 	tweets = collectTweets(company_name)
-	stock_score = sentimentAnalysis(tweets)
-
+	stock_score = sentimentAnalysis(test)
+	print stock_score
 main()
 
 
 
 
-
+# Notes:
+# search for "contrary#1" (only search for first word in line if it has #1 attached)
 
 
 
