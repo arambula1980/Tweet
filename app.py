@@ -4,39 +4,132 @@ import requests
 import tweepy
 import oauth2
 import json
+import string
+import re
+from unidecode import unidecode
 
-dow = [
-"MMM",
-"AXP",
-"AAPL",
-"BA",
-"CAT",
-"CVX",
-"CSCO",
-"KO",
-"DD",
-"XOM",
-"GE",
-"GS",
-"HD",
-"INTC",
-"IBM",
-"JNJ",
-"JPM",
-"MCD",
-"MRK",
-"MSFT",
-"NKE",
-"PFE",
-"PG",
-"TRV",
-"UNH",
-"UTX",
-"VZ",
-"V",
-"WMT",
-"DIS"
-]
+dow = ["MMM","AXP","AAPL","BA","CAT","CVX","CSCO","KO","DD","XOM","GE","GS","HD","INTC","IBM","JNJ","JPM","MCD","MRK","MSFT","NKE","PFE","PG","TRV","UNH","UTX","VZ","V","WMT","DIS"]
+# Source: http://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
+# Contractions to be used in tokenizer for possessives
+contractions = { 
+"ain't": "am not",
+"aren't": "are not",
+"can't": "cannot",
+"can't've": "cannot have",
+"'cause": "because",
+"could've": "could have",
+"couldn't": "could not",
+"couldn't've": "could not have",
+"didn't": "did not",
+"doesn't": "does not",
+"don't": "do not",
+"hadn't": "had not",
+"hadn't've": "had not have",
+"hasn't": "has not",
+"haven't": "have not",
+"he'd": "he would",
+"he'd've": "he would have",
+"he'll": "he will",
+"he'll've": "he will have",
+"he's": "he is",
+"how'd": "how did",
+"how'd'y": "how do you",
+"how'll": "how will",
+"how's": "how is",
+"I'd": "I would",
+"I'd've": "I would have",
+"I'll": "I will",
+"I'll've": "I will have",
+"I'm": "I am",
+"I've": "I have",
+"isn't": "is not",
+"it'd": "it had",
+"it'd've": "it would have",
+"it'll": "it will",
+"it'll've": "it will have",
+"it's": "it is",
+"let's": "let us",
+"ma'am": "madam",
+"mayn't": "may not",
+"might've": "might have",
+"mightn't": "might not",
+"mightn't've": "might not have",
+"must've": "must have",
+"mustn't": "must not",
+"mustn't've": "must not have",
+"needn't": "need not",
+"needn't've": "need not have",
+"o'clock": "of the clock",
+"oughtn't": "ought not",
+"oughtn't've": "ought not have",
+"shan't": "shall not",
+"sha'n't": "shall not",
+"shan't've": "shall not have",
+"she'd": "she had",
+"she'd've": "she would have",
+"she'll": "she will",
+"she'll've": "she will have",
+"she's": "she is",
+"should've": "should have",
+"shouldn't": "should not",
+"shouldn't've": "should not have",
+"so've": "so have",
+"so's": "so is",
+"that'd": "that had",
+"that'd've": "that would have",
+"that's": "that is",
+"there'd": "there had",
+"there'd've": "there would have",
+"there's": "there is",
+"they'd": "they would",
+"they'd've": "they would have",
+"they'll": "they will",
+"they'll've": "they will have",
+"they're": "they are",
+"they've": "they have",
+"to've": "to have",
+"wasn't": "was not",
+"we'd": "we had",
+"we'd've": "we would have",
+"we'll": "we will",
+"we'll've": "we will have",
+"we're": "we are",
+"we've": "we have",
+"weren't": "were not",
+"what'll": "what will",
+"what'll've": "what will have",
+"what're": "what are",
+"what's": "what is",
+"what've": "what have",
+"when's": "when is",
+"when've": "when have",
+"where'd": "where did",
+"where's": "where is",
+"where've": "where have",
+"who'll": "who will",
+"who'll've": "who will have",
+"who's": "who is",
+"who've": "who have",
+"why's": "why is",
+"why've": "why have",
+"will've": "will have",
+"won't": "will not",
+"won't've": "will not have",
+"would've": "would have",
+"wouldn't": "would not",
+"wouldn't've": "would not have",
+"y'all": "you all",
+"y'all'd": "you all would",
+"y'all'd've": "you all would have",
+"y'all're": "you all are",
+"y'all've": "you all have",
+"you'd": "you had",
+"you'd've": "you would have",
+"you'll": "you will",
+"you'll've": "you will have",
+"you're": "you are",
+"you've": "you have"
+}
 
 def get_symbol(symbol):
     url = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query={}&region=1&lang=en".format(symbol)
@@ -53,76 +146,106 @@ def oauth_req(url, key, secret, http_method="GET", post_body="", http_headers=No
     resp, content = client.request( url, method=http_method, body=post_body, headers=http_headers )
     return content
 
-#home_timeline = oauth_req( 'https://api.twitter.com/1.1/statuses/home_timeline.json', 'abcdefg', 'hijklmnop' )
-#print home_timeline
-def collectTweets(keyword):
-	#ConsumerKey = "pVWEU6OPLfznZ1cTrCCOdFFQl"
-	#ConsumerSecret = "ljofJTXL3NBZNPBI0fc8qXC5cLMOPRFhwP5iR0EprKBCV9qF23"
-	#auth = tweepy.OAuthHandler(ConsumerKey, ConsumerSecret)
-	#api = tweepy.API(auth)
-	#new_tweets = api.user_timeline("GSElevator", count=50)
-	url = "https://api.twitter.com/1.1/search/tweets.json?q=" + keyword + "&result_type=mixed&count=100"
-	#returned_tweets = oauth_req("https://api.twitter.com/1.1/search/tweets.json?q=%23michigan&result_type=mixed&count=4", 'abd','hey')
-	returned_tweets = oauth_req(url, 'abd','hey')
-	res = json.loads(returned_tweets)
-	print res["statuses"][0]["text"]
-	print len(res["statuses"])
-	tweet_text = list()
-	for status in res["statuses"]:
-		tweet_text.append(status["text"])
-	return tweet_text
-	# result = requests.get("https://api.twitter.com/1.1/search/tweets.json?q=%40AAPL")
-	# print result.text
-
-test = ["antithesis contrary it unable",
-"Abstinent the battered accessible",
-"accessible obliging",
-"Battered the wrong"]
-def sentimentAnalysis(tweets_list):
-	#scores_file = open("sentimentstrength/wordwithStrength.txt", "r")
+def create_dict():
 	scores_file = open("SentiWordNet.txt", "r")
-	#pos_dict = dict()
-	#neg_dict = dict()
 	scores_dict = dict()
-	tweet_scores = list()
-
 	for line in scores_file:
 		line = line.strip()
 		if line[0] != "#":
 			tmp = line.split()
 			word = tmp[4].split("#")
 			scores_dict[str(word[0])] = float(tmp[2]) - float(tmp[3])
-			#pos_dict[str(word[0])] = float(tmp[2])
-			#neg_dict[str(word[0])] = float(tmp[3])
-	#print scores_dict
+	return scores_dict
 
-	if "it" in scores_dict:
-		print scores_dict["it"]
+def collectTweets(keyword):
+	#ConsumerKey = "pVWEU6OPLfznZ1cTrCCOdFFQl"
+	#ConsumerSecret = "ljofJTXL3NBZNPBI0fc8qXC5cLMOPRFhwP5iR0EprKBCV9qF23"
+	#auth = tweepy.OAuthHandler(ConsumerKey, ConsumerSecret)
+	#api = tweepy.API(auth)
+	#new_tweets = api.user_timeline("GSElevator", count=50)
+	#print res["statuses"][0]["text"]
+	tweet_text = list()
+	url = "https://api.twitter.com/1.1/search/tweets.json?q=" + keyword + "&result_type=recent&count=100"
+	returned_tweets = oauth_req(url, 'abd','hey')
+	res = json.loads(returned_tweets)
+	for status in res["statuses"]:
+		tweet_text.append(status["text"])
+	return tweet_text
+	for num in range(0,1):
+		#print len(tweet_text)
+		#print res["statuses"][0]["text"]
+		#print res["statuses"][0]["created_at"]
+		#print res["statuses"][0]["user"]["time_zone"]
+		url = "https://api.twitter.com/1.1/search/tweets.json" + res["search_metadata"]["next_results"]
+		returned_tweets = oauth_req(url, 'abd','hey')
+		res = json.loads(returned_tweets)
+		for status in res["statuses"]:
+			tweet_text.append(status["text"])
+	return tweet_text
+	# result = requests.get("https://api.twitter.com/1.1/search/tweets.json?q=%40AAPL")
+	# print result.text
 
-	for each_tweet in tweets_list:
-		count = 0.0
-		tweet_score = 0.0
-		tmp = each_tweet.split()
-		for each_word in tmp:
-			if each_word.lower() in scores_dict:
-				print "word: ", each_word, "score: ", scores_dict[each_word.lower()]
-				tweet_score = tweet_score + scores_dict[each_word.lower()]
-				count = count + 1.0
-		print (each_tweet + " " + str(tweet_score/count))
-		if count != 0:
-			tweet_scores.append((float(tweet_score)/count))
+'''test = ["antithesis contrary it unable",
+"Abstinent the battered accessible",
+"accessible obliging",
+"Battered the wrong"]'''
 
-	total_score = sum(tweet_scores)
-	total_score = total_score / len(tweet_scores)
-	return total_score
+# Function to tokenize text
+def tokenizeText(line, wordNet_dict):
+	nums = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+	months = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sept.", "Oct.", "Nov.", "Dec.", "January", "February", "March", "April", "June", "July", "August", "September", "October", "November", "December"]
+	tokens = []
+	words = line.strip().split()
+
+	tmplist = list()
+	for word in words:
+		word = unidecode(word)
+        # APOSTROPHES:
+        # Tokenize "'" if in contraction:
+		if "'" in word:
+			if word in contractions:
+				expansion = contractions[word]
+				all_words = expansion.split()
+				for all_word in all_words:
+					tmplist.append(all_word)
+		else:
+			tmplist.append(word)
+
+	final_tokenized_list = list()
+	for tmp_words in tmplist:
+		replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
+		tmp_words = tmp_words.translate(replace_punctuation)
+		tmp_word = tmp_words.split()
+		final_tokenized_list.extend(tmp_word)
+
+	return final_tokenized_list
+
+def sentimentAnalysis(tweet_list, scores_dict):
+	count = 0.0
+	tweet_score = 0.0
+	for each_tweet_word in tweet_list:
+		if each_tweet_word.lower() in scores_dict:
+			#print "word: ", each_word, "score: ", scores_dict[each_word.lower()]
+			tweet_score = tweet_score + scores_dict[each_tweet_word.lower()]
+			count = count + 1.0
+		#print each_tweet + " " + str(tweet_score/count)
+	if count != 0:
+		return float(tweet_score)/count
+	else:
+		return 0.0
 
 
 def main():
 	ticker = sys.argv[1]
 	company_name = get_symbol(ticker)
+	scores_dict = create_dict()
 	tweets = collectTweets(company_name)
-	stock_score = sentimentAnalysis(test)
-	print stock_score
+	final_tweet_scores = list()
+	for tweet in tweets:
+		tokenized_tweets = tokenizeText(tweet, scores_dict)
+		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict))
+	print final_tweet_scores
+
 main()
 
 
