@@ -7,6 +7,7 @@ import json
 import string
 import re
 from unidecode import unidecode
+import math
 
 dow = ["MMM","AXP","AAPL","BA","CAT","CVX","CSCO","KO","DD","XOM","GE","GS","HD","INTC","IBM","JNJ","JPM","MCD","MRK","MSFT","NKE","PFE","PG","TRV","UNH","UTX","VZ","V","WMT","DIS"]
 # Source: http://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
@@ -163,16 +164,15 @@ def collectTweets(keyword):
 	#auth = tweepy.OAuthHandler(ConsumerKey, ConsumerSecret)
 	#api = tweepy.API(auth)
 	#new_tweets = api.user_timeline("GSElevator", count=50)
-	#print res["statuses"][0]["text"]
-	tweet_text = list()
+	tweet_text = dict()
 	url = "https://api.twitter.com/1.1/search/tweets.json?q=" + keyword + "&result_type=recent&count=100"
 	returned_tweets = oauth_req(url, 'abd','hey')
 	res = json.loads(returned_tweets)
 	for status in res["statuses"]:
-		tweet_text.append(status["text"])
+		tweet_text[status["id"]] = [status["text"], status["user"]["followers_count"]]
+		#tweet_text.append(status["text"])
 	return tweet_text
 	for num in range(0,1):
-		#print len(tweet_text)
 		#print res["statuses"][0]["text"]
 		#print res["statuses"][0]["created_at"]
 		#print res["statuses"][0]["user"]["time_zone"]
@@ -182,8 +182,6 @@ def collectTweets(keyword):
 		for status in res["statuses"]:
 			tweet_text.append(status["text"])
 	return tweet_text
-	# result = requests.get("https://api.twitter.com/1.1/search/tweets.json?q=%40AAPL")
-	# print result.text
 
 '''test = ["antithesis contrary it unable",
 "Abstinent the battered accessible",
@@ -220,7 +218,7 @@ def tokenizeText(line, wordNet_dict):
 
 	return final_tokenized_list
 
-def sentimentAnalysis(tweet_list, scores_dict):
+def sentimentAnalysis(tweet_list, scores_dict, tweet_followers):
 	count = 0.0
 	tweet_score = 0.0
 	for each_tweet_word in tweet_list:
@@ -229,11 +227,23 @@ def sentimentAnalysis(tweet_list, scores_dict):
 			tweet_score = tweet_score + scores_dict[each_tweet_word.lower()]
 			count = count + 1.0
 		#print each_tweet + " " + str(tweet_score/count)
-	if count != 0:
-		return float(tweet_score)/count
+	if count != 0.0:
+		weight_factor = math.log(float(tweet_followers), 10)
+		return weight_factor*(float(tweet_score)/count)
 	else:
 		return 0.0
 
+def scoreTweets(all_tweets_scores):
+	max_abs_val = math.fabs(all_tweets_scores[0])
+	for num in range(1, len(all_tweets_scores)):
+		if math.fabs(all_tweets_scores[num]) > max_abs_val:
+			max_abs_val = math.fabs(all_tweets_scores[num])
+
+	total_score = 0.0
+	for each_tweet_score in all_tweets_scores:
+		total_score = total_score + (float(each_tweet_score)/float(max_abs_val))
+	total_score_avg = float(total_score)/float(len(all_tweets_scores))
+	return total_score_avg
 
 def main():
 	ticker = sys.argv[1]
@@ -242,9 +252,9 @@ def main():
 	tweets = collectTweets(company_name)
 	final_tweet_scores = list()
 	for tweet in tweets:
-		tokenized_tweets = tokenizeText(tweet, scores_dict)
-		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict))
-	print final_tweet_scores
+		tokenized_tweets = tokenizeText(tweets[tweet][0], scores_dict)
+		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, tweets[tweet][1]))
+	print scoreTweets(final_tweet_scores)
 
 main()
 
