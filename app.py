@@ -228,7 +228,9 @@ def sentimentAnalysis(tweet_list, scores_dict, tweet_followers):
 			count = count + 1.0
 		#print each_tweet + " " + str(tweet_score/count)
 	if count != 0.0:
-		weight_factor = math.log(float(tweet_followers), 10)
+
+		# weight_factor = math.log(float(tweet_followers), 10)
+		weight_factor = (float(tweet_followers))
 		return weight_factor*(float(tweet_score)/count)
 	else:
 		return 0.0
