@@ -8,6 +8,8 @@ import string
 import re
 from unidecode import unidecode
 import math
+import schedule
+import time
 
 dow = ["MMM","AXP","AAPL","BA","CAT","CVX","CSCO","KO","DD","XOM","GE","GS","HD","INTC","IBM","JNJ","JPM","MCD","MRK","MSFT","NKE","PFE","PG","TRV","UNH","UTX","VZ","V","WMT","DIS"]
 # Source: http://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
@@ -132,6 +134,8 @@ contractions = {
 "you've": "you have"
 }
 
+tweet_text = dict()
+
 def get_symbol(symbol):
     url = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query={}&region=1&lang=en".format(symbol)
     result = requests.get(url).json()
@@ -164,23 +168,31 @@ def collectTweets(keyword):
 	#auth = tweepy.OAuthHandler(ConsumerKey, ConsumerSecret)
 	#api = tweepy.API(auth)
 	#new_tweets = api.user_timeline("GSElevator", count=50)
-	tweet_text = dict()
+	global tweet_text
 	url = "https://api.twitter.com/1.1/search/tweets.json?q=" + keyword + "&result_type=recent&count=100"
 	returned_tweets = oauth_req(url, 'abd','hey')
 	res = json.loads(returned_tweets)
 	for status in res["statuses"]:
 		tweet_text[status["id"]] = [status["text"], status["user"]["followers_count"]]
 		#tweet_text.append(status["text"])
-	return tweet_text
-	for num in range(0,1):
+	
+	for num in range(0,100):
 		#print res["statuses"][0]["text"]
 		#print res["statuses"][0]["created_at"]
 		#print res["statuses"][0]["user"]["time_zone"]
+		if res is None:
+			break
+		if "next_results" not in res:
+			break
 		url = "https://api.twitter.com/1.1/search/tweets.json" + res["search_metadata"]["next_results"]
 		returned_tweets = oauth_req(url, 'abd','hey')
+
 		res = json.loads(returned_tweets)
+		if res is None:
+			break
 		for status in res["statuses"]:
-			tweet_text.append(status["text"])
+			tweet_text[status["id"]] = [status["text"], status["user"]["followers_count"]]
+	
 	return tweet_text
 
 '''test = ["antithesis contrary it unable",
@@ -247,21 +259,45 @@ def scoreTweets(all_tweets_scores):
 	total_score_avg = float(total_score)/float(len(all_tweets_scores))
 	return total_score_avg
 
-def main():
-	ticker = sys.argv[1]
+def job():
+	global tweet_text
+	ticker = "TSLA"
 	company_name = get_symbol(ticker)
 	scores_dict = create_dict()
 	tweets = collectTweets(company_name)
+
+	for tweet in tweets:
+		if tweet not in tweet_text:
+			tweet_text[tweet] = tweets[tweet]
+
+
+	final_tweets = []
 	final_tweet_scores = list()
 	for tweet in tweets:
 		tokenized_tweets = tokenizeText(tweets[tweet][0], scores_dict)
 		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, tweets[tweet][1]))
+
 	print scoreTweets(final_tweet_scores)
 
+
+def main():
+	global tweet_text
+	schedule.every(15).minutes.do(job)
+	#schedule.every().hour.do(job)
+	#schedule.every().day.at("10:30").do(job)
+
+	while len(tweet_text) < 1000:
+		schedule.run_pending()
+    	time.sleep(1)
+	if len(tweet_text) >= 1000:
+		outfile = open("outfile.txt", 'w')
+		for tweet in tweet_text:
+			outfile.write("id: " + str(tweet) + " ," + str(tweet_text[tweet]) + "\n")
+		outfile.close()
+    		
+
+
 main()
-
-
-
 
 # Notes:
 # search for "contrary#1" (only search for first word in line if it has #1 attached)
