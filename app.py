@@ -279,17 +279,26 @@ def job():
 
 	print scoreTweets(final_tweet_scores)
 
+def test():
+	global tweet_text
+	ticker = "TSLA"
+	company_name = get_symbol(ticker)
+	tweets = collectTweets(company_name)
+
+	for tweet in tweets:
+		if tweet not in tweet_text:
+			tweet_text[tweet] = tweets[tweet]
 
 def main():
 	global tweet_text
-	schedule.every(15).minutes.do(job)
+	schedule.every(1).minutes.do(test)
 	#schedule.every().hour.do(job)
 	#schedule.every().day.at("10:30").do(job)
 
-	while len(tweet_text) < 1000:
+	while len(tweet_text) < 1:
 		schedule.run_pending()
     	time.sleep(1)
-	if len(tweet_text) >= 1000:
+	if len(tweet_text) >= 1:
 		outfile = open("outfile.txt", 'w')
 		for tweet in tweet_text:
 			outfile.write("id: " + str(tweet) + " ," + str(tweet_text[tweet]) + "\n")
