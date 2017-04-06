@@ -228,8 +228,10 @@ def tokenizeText(line, wordNet_dict):
 		tmp_word = tmp_words.split()
 		final_tokenized_list.extend(tmp_word)
 
+	#return a list of the words of one tweet 
 	return final_tokenized_list
 
+#returns the score of one tweet
 def sentimentAnalysis(tweet_list, scores_dict, tweet_followers):
 	count = 0.0
 	tweet_score = 0.0
@@ -259,25 +261,37 @@ def scoreTweets(all_tweets_scores):
 	total_score_avg = float(total_score)/float(len(all_tweets_scores))
 	return total_score_avg
 
-def job():
-	global tweet_text
+
+#it will be main
+def job(tweets):
+	# global tweet_text
 	ticker = "TSLA"
 	company_name = get_symbol(ticker)
 	scores_dict = create_dict()
-	tweets = collectTweets(company_name)
 
-	for tweet in tweets:
-		if tweet not in tweet_text:
-			tweet_text[tweet] = tweets[tweet]
+	#read tweets here from file
+	#tweets = collectTweets(company_name)
+
+	# for tweet in tweets:
+	# 	if tweet not in tweet_text:
+	# 		tweet_text[tweet] = tweets[tweet]
 
 
 	final_tweets = []
 	final_tweet_scores = list()
 	for tweet in tweets:
+		#change to do text and follower count
 		tokenized_tweets = tokenizeText(tweets[tweet][0], scores_dict)
 		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, tweets[tweet][1]))
 
-	print scoreTweets(final_tweet_scores)
+
+		#print value and buy/sell
+
+	company_score = scoreTweets(final_tweet_scores)
+	if company_score > 0:
+		print "Buy: " + str(company_score) 
+	else:
+		print "Sell: " + str(company_score) 
 
 def test():
 	global tweet_text
@@ -310,6 +324,28 @@ main()
 
 # Notes:
 # search for "contrary#1" (only search for first word in line if it has #1 attached)
+
+#TODO
+#First: fix this code so it parses tweet output (read files etc.) (thurs night)
+#Second:  collect tweets (Tesls TSLA, Ford F, GM gm, Toyota TM, ) (attempt to collect 1000)  (sunday night - depending on collect num)
+#Third: Collect data of closing prices and collect percent change (monday (most done saturday))
+
+#run code (monday)
+
+
+#analysis:  4/3/17 to 4/10/17 (monday)
+#1: for each day is our output (buy/sell) correct
+#2: compare percent change to our magnitudes
+#3: see if there is any correlation between company and stock market and industry and stock market
+#4: see which stock correlates with market (tweets) better and due to what factors
+
+#Presentation:
+#report - work on it (before poster) (thurs)
+#create slides - showing purpose, evaluation, conclusions (wed)
+#Poster - problem we are addressing, related work, description of approach, data set description, results and evaluations, conclusions (thurs)
+
+#VERY LAST (thurs)
+#change to work for any stock (100 tweets) for poster session
 
 
 
