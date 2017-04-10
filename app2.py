@@ -243,10 +243,10 @@ def sentimentAnalysis(tweet_list, scores_dict, tweet_followers):
 			count = count + 1.0
 		#print each_tweet + " " + str(tweet_score/count)
 	if count != 0.0:
-
-		# weight_factor = math.log(float(tweet_followers), 10)
-		weight_factor = (float(tweet_followers))
-		return weight_factor*(float(tweet_score)/count)
+		tweet_followers = float(tweet_followers) + 1.0 #add one smoothing to avoid log(0)
+		weight_factor = math.log(float(tweet_followers), 10)
+		# weight_factor = (float(tweet_followers))
+		return weight_factor*(float(tweet_score)/count) #normalziing per tweet to avoid length factor
 	else:
 		return 0.0
 
@@ -263,36 +263,36 @@ def scoreTweets(all_tweets_scores):
 	return total_score_avg
 
 
-#it will be main
-def main(tweets):
-	# global tweet_text
-	ticker = "TSLA"
-	company_name = get_symbol(ticker)
-	scores_dict = create_dict()
+# #it will be main
+# def main(tweets):
+# 	# global tweet_text
+# 	ticker = "TSLA"
+# 	company_name = get_symbol(ticker)
+# 	scores_dict = create_dict()
 
-	#read tweets here from file
-	#tweets = collectTweets(company_name)
+# 	#read tweets here from file
+# 	#tweets = collectTweets(company_name)
 
-	# for tweet in tweets:
-	# 	if tweet not in tweet_text:
-	# 		tweet_text[tweet] = tweets[tweet]
-
-
-	final_tweets = []
-	final_tweet_scores = list()
-	for tweet in tweets:
-		#change to do text and follower count
-		tokenized_tweets = tokenizeText(tweets[tweet][0], scores_dict)
-		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, tweets[tweet][1]))
+# 	# for tweet in tweets:
+# 	# 	if tweet not in tweet_text:
+# 	# 		tweet_text[tweet] = tweets[tweet]
 
 
-		#print value and buy/sell
+# 	final_tweets = []
+# 	final_tweet_scores = list()
+# 	for tweet in tweets:
+# 		#change to do text and follower count
+# 		tokenized_tweets = tokenizeText(tweets[tweet][0], scores_dict)
+# 		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, tweets[tweet][1]))
 
-	company_score = scoreTweets(final_tweet_scores)
-	if company_score > 0:
-		print "Buy: " + str(company_score) 
-	else:
-		print "Sell: " + str(company_score) 
+
+# 		#print value and buy/sell
+
+# 	company_score = scoreTweets(final_tweet_scores)
+# 	if company_score > 0:
+# 		print "Buy: " + str(company_score) 
+# 	else:
+# 		print "Sell: " + str(company_score) 
 
 def main():
 	ticker = sys.argv[2]
@@ -301,6 +301,8 @@ def main():
 	scores_dict = create_dict()
 
 	words = []
+
+	tweet_id_list = []
 
 	final_tweets = []
 	final_tweet_scores = list()
@@ -316,24 +318,31 @@ def main():
 		 	id = id[:-1]
 		 	id = id[1:]
 
-		 	values = values[1].rsplit(',',1)
+		 	if id in tweet_id_list:
+		 		continue
+		 	
+		 	tweet_id_list.append(id)
 
+		 	values = values[1].rsplit(',',1)
 		 	num_followers = values[1][:-2]
 		 	num_followers = num_followers[1:]
 
 		 	text = values[0][3:]
 		 	text = text[:-2]
+		 	#print num_followers + '\n' + text
 		 	
 		 	tokenized_tweets = tokenizeText(text, scores_dict)
 			final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, num_followers))
 		 	#print "id = " + str(id) + " text = " + text + " num_followers = " + str(num_followers)
 		infile.close()
 
-	company_score = scoreTweets(final_tweet_scores)
+	company_score = scoreTweets(final_tweet_scores) * 100
+	company_score = "{:10.3f}".format(company_score)
+	
 	if company_score > 0:
-		print "Buy: " + str(company_score) 
+		print "Decision: Buy\nConsumer Sentiment: " + str(company_score.lstrip()) + '% Positivity'
 	else:
-		print "Sell: " + str(company_score) 
+		print "Decision: Sell\nConsumer Sentiment: " + str(company_score.lstrip()) + '% Positivity'
 
 def test():
 	global tweet_text
