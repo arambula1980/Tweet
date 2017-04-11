@@ -1,7 +1,7 @@
 import sys
 import os
 import requests
-import tweepy
+# import tweepy
 import oauth2
 import json
 import string
@@ -243,7 +243,7 @@ def sentimentAnalysis(tweet_list, scores_dict, tweet_followers):
 			count = count + 1.0
 		#print each_tweet + " " + str(tweet_score/count)
 	if count != 0.0:
-		tweet_followers = float(tweet_followers) + 1.0 #add one smoothing to avoid log(0)
+		tweet_followers = float(tweet_followers) + 1.0 # throw out tweets with authors who have 0 followers
 		weight_factor = math.log(float(tweet_followers), 10)
 		# weight_factor = (float(tweet_followers))
 		return weight_factor*(float(tweet_score)/count) #normalziing per tweet to avoid length factor
@@ -332,7 +332,8 @@ def main():
 		 	#print num_followers + '\n' + text
 		 	
 		 	tokenized_tweets = tokenizeText(text, scores_dict)
-			final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, num_followers))
+			if (int(num_followers) > 10000):
+				final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, num_followers))
 		 	#print "id = " + str(id) + " text = " + text + " num_followers = " + str(num_followers)
 		infile.close()
 
@@ -399,6 +400,11 @@ main()
 #change to work for any stock (100 tweets) for poster session
 
 
+
+
+#evaluation:
+# -accurary at different follow counts (yes or no)
+# 
 
 
 
