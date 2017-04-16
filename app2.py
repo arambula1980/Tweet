@@ -137,14 +137,18 @@ contractions = {
 
 tweet_text = dict()
 
+#this function is not called as the tweets for these companies have been collected
+#uses yahoo finance api to get company name from ticker
 def get_symbol(symbol):
     url = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query={}&region=1&lang=en".format(symbol)
     result = requests.get(url).json()
 
+    #place in json object where company name is found and then returned
     for x in result['ResultSet']['Result']:
         if x['symbol'] == symbol:
             return x['name']
 
+#twitter API authorization
 def oauth_req(url, key, secret, http_method="GET", post_body="", http_headers=None):
     consumer = oauth2.Consumer(key="qOaznKRz5VhaSl7Cz6QYH2nB9", secret="LdvYknJa0WZroecT0k1KYdRi7UH8ot0K8HezT5OAC0uLaiTbJk")
     token = oauth2.Token(key="809904932-NnxQCbT29Y97CqdxRMhJMwrxs3DsiLi7Q3hx6nUJ", secret="Zwuw2pCGZopavmKHwbrswVuriCdVAjwY5OeOk97a1uWgT")
@@ -152,35 +156,50 @@ def oauth_req(url, key, secret, http_method="GET", post_body="", http_headers=No
     resp, content = client.request( url, method=http_method, body=post_body, headers=http_headers )
     return content
 
+#read the words from the sentiwordnet (list with positivity and negativity scores for over 13,000 wrods)
 def create_dict():
 	scores_file = open("SentiWordNet.txt", "r")
 	scores_dict = dict()
+
+	#add the word into the dictionary with the positive score - the negative score 
 	for line in scores_file:
 		line = line.strip()
 		if line[0] != "#":
 			tmp = line.split()
 			word = tmp[4].split("#")
 			scores_dict[str(word[0])] = float(tmp[2]) - float(tmp[3])
+
+	#read in emoji dictionary
+	reader = csv.reader(open('EmojiSentiment.csv'))
+
+	emojiDict = dict()
+
+	#add emoji scores to the dictionary
+	for row in reader:
+		emojiDict[row[0]] = row[1]
+	scores_dict.update(emojiDict);
+
 	return scores_dict
 
+#this function is not called because the tweets have already been collected but was called when running the cron job ran
+#collect the tweets with a keyword(company name)
 def collectTweets(keyword):
-	#ConsumerKey = "pVWEU6OPLfznZ1cTrCCOdFFQl"
-	#ConsumerSecret = "ljofJTXL3NBZNPBI0fc8qXC5cLMOPRFhwP5iR0EprKBCV9qF23"
-	#auth = tweepy.OAuthHandler(ConsumerKey, ConsumerSecret)
-	#api = tweepy.API(auth)
-	#new_tweets = api.user_timeline("GSElevator", count=50)
 	global tweet_text
+
+	#search query for twitter api
 	url = "https://api.twitter.com/1.1/search/tweets.json?q=" + keyword + "&result_type=recent&count=100"
 	returned_tweets = oauth_req(url, 'abd','hey')
+
+	#convert tweet from json to dictionary
 	res = json.loads(returned_tweets)
+
+	#collect all tweet text and tweeter follower count
 	for status in res["statuses"]:
 		tweet_text[status["id"]] = [status["text"], status["user"]["followers_count"]]
 		#tweet_text.append(status["text"])
 	
+	#iterate through more pages in twitter to collect as many tweets as possible and store those as well
 	for num in range(0,100):
-		#print res["statuses"][0]["text"]
-		#print res["statuses"][0]["created_at"]
-		#print res["statuses"][0]["user"]["time_zone"]
 		if res is None:
 			break
 		if "next_results" not in res:
@@ -196,16 +215,12 @@ def collectTweets(keyword):
 	
 	return tweet_text
 
-'''test = ["antithesis contrary it unable",
-"Abstinent the battered accessible",
-"accessible obliging",
-"Battered the wrong"]'''
-
 # Function to tokenize text
 def tokenizeText(line, wordNet_dict):
 	nums = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 	months = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sept.", "Oct.", "Nov.", "Dec.", "January", "February", "March", "April", "June", "July", "August", "September", "October", "November", "December"]
 	tokens = []
+	#split the tweet into words by spaces
 	words = line.strip().split()
 
 	tmplist = list()
@@ -223,6 +238,7 @@ def tokenizeText(line, wordNet_dict):
 			tmplist.append(word)
 
 	final_tokenized_list = list()
+
 	for tmp_words in tmplist:
 		replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
 		tmp_words = tmp_words.translate(replace_punctuation)
@@ -236,20 +252,22 @@ def tokenizeText(line, wordNet_dict):
 def sentimentAnalysis(tweet_list, scores_dict, tweet_followers):
 	count = 0.0
 	tweet_score = 0.0
+
+	#iterate through each word in a single tweet and get the score from the sentiment library
 	for each_tweet_word in tweet_list:
 		if each_tweet_word.lower() in scores_dict:
-			#print "word: ", each_word, "score: ", scores_dict[each_word.lower()]
 			tweet_score = tweet_score + scores_dict[each_tweet_word.lower()]
 			count = count + 1.0
-		#print each_tweet + " " + str(tweet_score/count)
+
+	#if no tweets are collected 0 is returned
 	if count != 0.0:
 		tweet_followers = float(tweet_followers) + 1.0 # throw out tweets with authors who have 0 followers
 		weight_factor = math.log(float(tweet_followers), 10)
-		# weight_factor = (float(tweet_followers))
 		return weight_factor*(float(tweet_score)/count) #normalziing per tweet to avoid length factor
 	else:
 		return 0.0
 
+#computes the final score by summing the tweets and normalizing
 def scoreTweets(all_tweets_scores):
 	max_abs_val = math.fabs(all_tweets_scores[0])
 	for num in range(1, len(all_tweets_scores)):
@@ -258,66 +276,41 @@ def scoreTweets(all_tweets_scores):
 
 	total_score = 0.0
 	for each_tweet_score in all_tweets_scores:
-		total_score = total_score + (float(each_tweet_score)/float(max_abs_val))
+		if float(max_abs_val) > 0:
+			total_score = total_score + (float(each_tweet_score)/float(max_abs_val))
 	total_score_avg = float(total_score)/float(len(all_tweets_scores))
-	return total_score_avg
 
-
-# #it will be main
-# def main(tweets):
-# 	# global tweet_text
-# 	ticker = "TSLA"
-# 	company_name = get_symbol(ticker)
-# 	scores_dict = create_dict()
-
-# 	#read tweets here from file
-# 	#tweets = collectTweets(company_name)
-
-# 	# for tweet in tweets:
-# 	# 	if tweet not in tweet_text:
-# 	# 		tweet_text[tweet] = tweets[tweet]
-
-
-# 	final_tweets = []
-# 	final_tweet_scores = list()
-# 	for tweet in tweets:
-# 		#change to do text and follower count
-# 		tokenized_tweets = tokenizeText(tweets[tweet][0], scores_dict)
-# 		final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, tweets[tweet][1]))
-
-
-# 		#print value and buy/sell
-
-# 	company_score = scoreTweets(final_tweet_scores)
-# 	if company_score > 0:
-# 		print "Buy: " + str(company_score) 
-# 	else:
-# 		print "Sell: " + str(company_score) 
+	#return the percent value
+	return total_score_avg 
 
 def main():
-	ticker = sys.argv[2]
+
+	#this path should have txt files for tweets of all of one company
 	path = sys.argv[1]
-	company_name = get_symbol(ticker)
+
+	#create the sentiment dictionary using sentiwordnet 
 	scores_dict = create_dict()
 
 	words = []
-
 	tweet_id_list = []
-
 	final_tweets = []
 	final_tweet_scores = list()
 
+	#iterate through all the files in the directory
 	for f in os.listdir(path):
 		infile = codecs.open(os.path.join(path, f), 'r')
 		while 1:
 			line = infile.readline()
 			if line == '':
 				break
+
+			#the lines are formatted id , tuple of tweet text and follower count of tweeter
 		 	values = line.split(',',1)
 		 	id = values[0].split(':')[1]
 		 	id = id[:-1]
 		 	id = id[1:]
 
+		 	#if the tweet had been collected as a dup, do not add it again into the tweet list
 		 	if id in tweet_id_list:
 		 		continue
 		 	
@@ -332,11 +325,15 @@ def main():
 		 	#print num_followers + '\n' + text
 		 	
 		 	tokenized_tweets = tokenizeText(text, scores_dict)
+
+		 	#used if we are only doing tweets with many followers 
 			if (int(num_followers) > 10000):
 				final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, num_followers))
+			#use this line instead for all tweets
 		 	#print "id = " + str(id) + " text = " + text + " num_followers = " + str(num_followers)
 		infile.close()
 
+	#get the score of the company
 	company_score = scoreTweets(final_tweet_scores) * 100
 	company_score = "{:10.3f}".format(company_score)
 	
@@ -345,6 +342,8 @@ def main():
 	else:
 		print "Decision: Sell\nConsumer Sentiment: " + str(company_score.lstrip()) + '% Positivity'
 
+
+#this two functions below were used to run the cron job but are not being called currently as the tweets are no longer being collected and the file now evaluates collected tweets
 def test():
 	global tweet_text
 	ticker = "TSLA"
@@ -374,37 +373,6 @@ def job():
 
 main()
 
-# Notes:
-# search for "contrary#1" (only search for first word in line if it has #1 attached)
-
-#TODO
-#First: fix this code so it parses tweet output (read files etc.) (thurs night)
-#Second:  collect tweets (Tesls TSLA, Ford F, GM gm, Toyota TM, ) (attempt to collect 1000)  (sunday night - depending on collect num)
-#Third: Collect data of closing prices and collect percent change (monday (most done saturday))
-
-#run code (monday)
-
-
-#analysis:  4/3/17 to 4/10/17 (monday)
-#1: for each day is our output (buy/sell) correct
-#2: compare percent change to our magnitudes
-#3: see if there is any correlation between company and stock market and industry and stock market
-#4: see which stock correlates with market (tweets) better and due to what factors
-
-#Presentation:
-#report - work on it (before poster) (thurs)
-#create slides - showing purpose, evaluation, conclusions (wed)
-#Poster - problem we are addressing, related work, description of approach, data set description, results and evaluations, conclusions (thurs)
-
-#VERY LAST (thurs)
-#change to work for any stock (100 tweets) for poster session
-
-
-
-
-#evaluation:
-# -accurary at different follow counts (yes or no)
-# 
 
 
 
