@@ -1,7 +1,6 @@
 import sys
 import os
 import requests
-# import tweepy
 import oauth2
 import json
 import string
