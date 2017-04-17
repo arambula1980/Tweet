@@ -21,7 +21,7 @@ How To Use:
 To run it on any stock ticker using the most recent tweets, run "python demo.py [INSERT STOCK TICKER]"
 Example: python demo.py goog
 
-To run on collected tweets run "python app2.py [INSERT NAME OF DIRECTORY CONTAINING TWEET FILES]"
+To run on collected tweets run "python app2.py [INSERT NAME OF DIRECTORY CONTAINING TWEET FILES]/"
 Example: python app2.py gm/
 
 The files containing tweets need to be formatted as follows:
