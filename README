@@ -1,0 +1,26 @@
+Twitter Sentiment Analysis for Stock Prediction
+Final Project EECS 486
+
+Description of Project (abridged):
+We want to collect tweets for a company (given a stock ticker) and complete sentiment analysis on the tweets to see if one should buy the stock. 
+We do this by first finding the company using the yahoo finance api. From there, we collect tweets using the twitter search API. We then tokenize the text and score each tweet by word. The scores are normalized by length of the tweet as well as number of followers the tweeter has. Once the scores are compiled, they are divided by the largest score then averaged. We then multiply by 100 to get the percent positivity.
+The sentiment and emoji dictionary were compiled from two different sources. The emoji dictionary was collectes from http://kt.ijs.si/data/Emoji_sentiment_ranking/about.html and turned into a csv. The sentiment library was collected from sentiwordnet. They contain a positivity and negativity score. We use these scores to count score each word
+
+File Manifest:
+App2.py
+Demo.py
+EmojiSentiment.csv
+SentiWordNet.txt
+
+How To Use:
+To run it on a stock with the most recent tweets using the api currently, run python demo.py [Stock Ticker]
+To run on collected tweets run python app2.py [directory containing tweet files]
+The files containing tweets need to be formatted ID: [ID], [Tweet text, Number of followers] IE.
+id: 849061127199870976 ,[u'Electric car maker Tesla, Inc. had a record quarter from January to March 2017, during which it both produced and... https://t.co/Ipoftmm3lM', 41649]
+
+Authors:
+Yashan Thakkar
+Kevin Shah 
+Benjamin Rathi
+Samidha Visai
+
