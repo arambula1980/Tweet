@@ -338,7 +338,7 @@ def main():
 	company_score = scoreTweets(final_tweet_scores) * 100
 	company_score = "{:10.3f}".format(company_score)
 	
-	if company_score > 0:
+	if float(company_score) > 0:
 		print "Decision: Buy\nConsumer Sentiment: " + str(company_score.lstrip()) + '% Positivity'
 	else:
 		print "Decision: Sell\nConsumer Sentiment: " + str(company_score.lstrip()) + '% Positivity'
