@@ -26,6 +26,7 @@ Finally, the data included in this project are some tweets from 04/03/2017 to 04
 
 ##### Datasets:
 File directories of ford, gm, toyota, tsla, volkswagen: Collection of tweets from 4/3/17 to 4/10/17 for Ford, GM, Toyota, Tesla, and Volkswagen
+
 AutoStockData_4-3_4-10.xlsx: Financial data for each stock from 3/31/17 to 4/10/17 used to obtain percent change of each stock's price daily and weekly
 
 The files containing tweets need to be formatted as follows:
@@ -60,10 +61,7 @@ Example: python app2.py gm/
 ***
 
 ##### Authors:
-Benjamin Rathi
-Kevin Shah 
-Yashan Thakkar
-Samidha Visai
+Benjamin Rathi, Kevin Shah, Yashan Thakkar, Samidha Visai
 
 ##### Acknowledgements:
 We would like to thank Professor Rada Mihalcea, Michael Vander Lugt, Matthew Wiseman, and Zheng Wu for their guidance and support in EECS 486, Winter 2017. 
