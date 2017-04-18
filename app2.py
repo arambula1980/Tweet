@@ -225,7 +225,10 @@ def tokenizeText(line, wordNet_dict):
 
 	tmplist = list()
 	for word in words:
-		word = unidecode(word)
+		try:
+			word = unidecode(word)
+		except:
+			pass
         # APOSTROPHES:
         # Tokenize "'" if in contraction:
 		if "'" in word:
@@ -326,9 +329,7 @@ def main():
 		 	
 		 	tokenized_tweets = tokenizeText(text, scores_dict)
 
-		 	#used if we are only doing tweets with many followers 
-			if (int(num_followers) > 10000):
-				final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, num_followers))
+			final_tweet_scores.append(sentimentAnalysis(tokenized_tweets, scores_dict, num_followers))
 			#use this line instead for all tweets
 		 	#print "id = " + str(id) + " text = " + text + " num_followers = " + str(num_followers)
 		infile.close()
