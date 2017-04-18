@@ -58,6 +58,8 @@ To run on collected tweets run
 Example: python app2.py gm/
 ```
 
+GITHUB REPO: https://github.com/iamyashan/EECS486project
+
 ***
 
 ##### Authors:
