@@ -58,8 +58,6 @@ To run on collected tweets run
 Example: python app2.py gm/
 ```
 
-GITHUB REPO: https://github.com/iamyashan/EECS486project
-
 ***
 
 ##### Authors:
@@ -68,4 +66,6 @@ Benjamin Rathi, Kevin Shah, Yashan Thakkar, Samidha Visai
 ##### Acknowledgements:
 We would like to thank Professor Rada Mihalcea, Michael Vander Lugt, Matthew Wiseman, and Zheng Wu for their guidance and support in EECS 486, Winter 2017. 
 
+
+GITHUB REPO: https://github.com/iamyashan/EECS486project
 
