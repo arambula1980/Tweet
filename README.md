@@ -19,32 +19,42 @@ Finally, the data included in this project are some tweets from 04/03/2017 to 04
 * demo.py
 * EmojiSentiment.csv
 * SentiWordNet.txt
+* File directories containing tweets: ford, gm, toyota, tsla, volkswagen
+* Excel sheet with stock price data: AutoStockData_4-3_4-10.xlsx
 
 ***
 
 ##### Datasets:
-Collection of tweets from 4/3/17 to 4/10/17 for Ford, GM, Toyota, Tesla, and Volkswagen
+File directories of ford, gm, toyota, tsla, volkswagen: Collection of tweets from 4/3/17 to 4/10/17 for Ford, GM, Toyota, Tesla, and Volkswagen
+AutoStockData_4-3_4-10.xlsx: Financial data for each stock from 3/31/17 to 4/10/17 used to obtain percent change of each stock's price daily and weekly
+
+The files containing tweets need to be formatted as follows:
+```sh
+ID: [ID], [Tweet text, Number of followers]
+Example: id: 849061127199870976 ,[u'Electric car maker Tesla, Inc. had a record quarter from January to March 2017, during which it both produced and... https://t.co/Ipoftmm3lM', 41649]
+```
 
 ***
 
 ##### How To Use:
+Install packages:
+```sh
+pip install unidecode
+pip install schedule
+pip install requests
+pip install oauth2
+```
+##### Running Software:
 To run it on any stock ticker using the most recent tweets, run 
 ```sh
 python demo.py [INSERT STOCK TICKER]
 Example: python demo.py goog
 ```
 
-
 To run on collected tweets run 
 ```sh
 "python app2.py [INSERT NAME OF DIRECTORY CONTAINING TWEET FILES]/"
 Example: python app2.py gm/
-```
-
-The files containing tweets need to be formatted as follows:
-```sh
-ID: [ID], [Tweet text, Number of followers]
-Example: id: 849061127199870976 ,[u'Electric car maker Tesla, Inc. had a record quarter from January to March 2017, during which it both produced and... https://t.co/Ipoftmm3lM', 41649]
 ```
 
 ***
@@ -56,7 +66,6 @@ Yashan Thakkar
 Samidha Visai
 
 ##### Acknowledgements:
-
 We would like to thank Professor Rada Mihalcea, Michael Vander Lugt, Matthew Wiseman, and Zheng Wu for their guidance and support in EECS 486, Winter 2017. 
 
 
