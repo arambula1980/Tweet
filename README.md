@@ -25,9 +25,7 @@ Finally, the data included in this project are some tweets from 04/03/2017 to 04
 ***
 
 ##### Datasets:
-File directories of ford, gm, toyota, tsla, volkswagen: Collection of tweets from 4/3/17 to 4/10/17 for Ford, GM, Toyota, Tesla, and Volkswagen
-
-AutoStockData_4-3_4-10.xlsx: Financial data for each stock from 3/31/17 to 4/10/17 used to obtain percent change of each stock's price daily and weekly
+File directories of ford/, gm/, toyota/, tsla/, volkswagen/: Collection of tweets from 4/3/17 to 4/10/17 for Ford, GM, Toyota, Tesla, and Volkswagen
 
 The files containing tweets need to be formatted as follows:
 ```sh
@@ -35,10 +33,12 @@ ID: [ID], [Tweet text, Number of followers]
 Example: id: 849061127199870976 ,[u'Electric car maker Tesla, Inc. had a record quarter from January to March 2017, during which it both produced and... https://t.co/Ipoftmm3lM', 41649]
 ```
 
+AutoStockData_4-3_4-10.xlsx: Financial data for each of the five auto stocks from 3/31/17 to 4/10/17, used to obtain percent change of each stock's price daily and weekly. The data was taken from Yahoo Finance, and has been slightly annotated for clarity and ease of analysis (i.e., rounding, percent change calculations, averages).
+
 ***
 
 ##### How To Use:
-Install packages:
+Install necessary packages using "pip install". Below, please find some packages you may need to install:
 ```sh
 pip install unidecode
 pip install schedule
@@ -52,11 +52,13 @@ python demo.py [INSERT STOCK TICKER]
 Example: python demo.py goog
 ```
 
-To run on collected tweets run 
+To run on collected tweets (of the five auto companies) run 
 ```sh
 "python app2.py [INSERT NAME OF DIRECTORY CONTAINING TWEET FILES]/"
 Example: python app2.py gm/
 ```
+
+GITHUB REPO: https://github.com/iamyashan/EECS486project
 
 ***
 
@@ -64,8 +66,6 @@ Example: python app2.py gm/
 Benjamin Rathi, Kevin Shah, Yashan Thakkar, Samidha Visai
 
 ##### Acknowledgements:
-We would like to thank Professor Rada Mihalcea, Michael Vander Lugt, Matthew Wiseman, and Zheng Wu for their guidance and support in EECS 486, Winter 2017. 
+We would like to thank Professor Rada Mihalcea, Michael Vander Lugt, Mathew Wiseman, and Zheng Wu for their guidance and support in EECS 486, Winter 2017. 
 
-
-GITHUB REPO: https://github.com/iamyashan/EECS486project
 

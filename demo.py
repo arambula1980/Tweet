@@ -12,7 +12,6 @@ import time
 import codecs 
 import csv
 
-dow = ["MMM","AXP","AAPL","BA","CAT","CVX","CSCO","KO","DD","XOM","GE","GS","HD","INTC","IBM","JNJ","JPM","MCD","MRK","MSFT","NKE","PFE","PG","TRV","UNH","UTX","VZ","V","WMT","DIS"]
 # Source: http://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
 # Contractions to be used in tokenizer for possessives
 contractions = { 
